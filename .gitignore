@@ -1,0 +1,23 @@
+# node_modules
+node_modules/
+
+# log files and databases
+*.log
+*.db
+
+# system files
+.DS_Store
+
+# NUI build files
+html/css/
+html/js/
+
+# Lua cache files
+*.luac
+
+# FiveM server files
+cache/
+logs/
+*.pid
+*.dll
+*.so
