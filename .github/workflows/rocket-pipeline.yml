@@ -1,0 +1,38 @@
+name: deploy-to-rocketnode
+run-name: ${{ github.actor }} is deploying to RocketNode
+
+on:
+    push:
+        branches:
+          - main
+    pull_request:
+        types: [closed]
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    if: (github.event_name == 'pull_request' && github.event.pull_request.merged == true) || (github.event_name == 'push' && github.actor == 'ppshTechnician')
+    steps:
+      - name: checkout repository
+        uses: actions/checkout@v2
+
+      - name: install dependencies
+        run: npm install
+
+      - name: setup ssh
+        run: |
+          mkdir -p ~/.ssh
+          echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+        #create the '.ssh' directory if it doesnt already exist
+        #write the ssh private key from the github secret to file
+        #sets correct perms for private key file
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }} 
+
+      - name: add rocketnode to known_hosts
+        run: |
+          ssh-keyscan -H ${{ secrets.IP_ADDRESS }} >> ~/.ssh/known_hosts
+
+      - name: deploy to rocketnode
+        run: |
+          ssh -i ~/.ssh/id_rsa ${{ secrets.SSH_USERNAME }}@${{ secrets.IP_ADDRESS }} "bash /home/container/deployment/deployment_script.sh"
